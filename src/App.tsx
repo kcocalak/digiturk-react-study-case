@@ -6,39 +6,40 @@ import { Forecastday, Hour, Weather } from "./types";
 
 function App() {
   const [waetherData, setWaetherData] = useState<Weather>();
-  const [location] = useState("London"); 
+  const [location] = useState("London");
   //celsius ve fahrenheit tiplerine gore dereceler degistigi icin kontrol olusturmak amaciyla temperature type eklendi
-  const [tempType, setTempType] = useState('celsius')
-  // anlik saatten sonraki saatteki bilgileri tutmak icin state olusturuldu 
-  const [nextHours, setNextHours] = useState<Hour[]>([]) 
-  
+  const [tempType, setTempType] = useState("celsius");
+  // anlik saatten sonraki saatteki bilgileri tutmak icin state olusturuldu
+  const [nextHours, setNextHours] = useState<Hour[]>([]);
+
   const hour = moment().hour(); //anlik saat bilgisi
 
   // sayfa ilk render edildiginde istek atarak api'dan bilgileri cekiyor
   const url = `https://api.weatherapi.com/v1/forecast.json?key=${process.env.REACT_APP_WAETHER_API_KEY}&q=${location}&days=1`;
   useEffect(() => {
-    const getWaetherData = () => {axios.get(url).then((response) => {
-      setWaetherData(response.data);
-      response.data.forecast?.forecastday.map((i: Forecastday) => {
-        let tempNextHours:Hour[] = []
-        i.hour.map((item:Hour,index:number)=>{    
-          //sonraki ilk 8 datayi cekmek icin kosul konuldu.  
-          if(parseInt(item.time.split(' ')[1].split(':')[0]) > hour && index < (hour + 9)) {
-            
-            tempNextHours.push(item)
-          } 
+    const getWaetherData = () => {
+      axios.get(url).then((response) => {
+        setWaetherData(response.data);
+        response.data.forecast?.forecastday.map((i: Forecastday) => {
+          let tempNextHours: Hour[] = [];
+          i.hour.map((item: Hour, index: number) => {
+            //sonraki ilk 8 datayi cekmek icin kosul konuldu.
+            if (
+              parseInt(item.time.split(" ")[1].split(":")[0]) > hour &&
+              index < hour + 9
+            ) {
+              tempNextHours.push(item);
+            }
+          });
+          setNextHours(tempNextHours);
         });
-        console.log(tempNextHours);
-        
-      setNextHours(tempNextHours)
-      })
-    });}
-    getWaetherData()
-    const interval = setInterval(() => getWaetherData(), 10000)
-        return () => {
-          clearInterval(interval);
-        }
-
+      });
+    };
+    getWaetherData();
+    const interval = setInterval(() => getWaetherData(), 10000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   return (
